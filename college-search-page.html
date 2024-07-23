@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>College Admission Search</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background-color: white;
+            padding: 20px 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            max-width: 800px;
+            width: 100%;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            font-weight: 500;
+            margin: 10px 0 5px;
+        }
+        input, select {
+            width: calc(100% - 20px);
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button {
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AP EAPCET 2024: Last Rank Cutoffs for Colleges</h1>
+        <form id="searchForm">
+            <label for="rank">Rank:</label>
+            <input type="number" id="rank" name="rank" min="1" placeholder="Enter minimum rank">
+
+            <label for="region">Region:</label>
+            <select id="region" name="region">
+                <option value="">All</option>
+                <option value="AU">AU</option>
+                <option value="SVU">SVU</option>
+            </select>
+
+            <label for="gender">Gender:</label>
+            <select id="gender" name="gender">
+                <option value="">All</option>
+                <option value="M">Male</option>
+                <option value="F">Female</option>
+            </select>
+
+            <label for="caste">Caste:</label>
+            <select id="caste" name="caste">
+                <option value="">All</option>
+                <option value="BC_A">BC_A</option>
+                <option value="BC_B">BC_B</option>
+                <option value="BC_C">BC_C</option>
+                <option value="BC_D">BC_D</option>
+                <option value="BC_E">BC_E</option>
+                <option value="OC">OC</option>
+                <option value="SC">SC</option>
+                <option value="ST">ST</option>
+                <option value="EWS">EWS</option>
+            </select>
+
+            <label for="branch">Branch:</label>
+            <select id="branch" name="branch">
+                <option value="">All</option>
+            </select>
+
+            <label for="collegeCode">College Code:</label>
+            <select id="collegeCode" name="collegeCode">
+                <option value="">All</option>
+            </select>
+
+            <button type="submit">Search</button>
+        </form>
+    </div>
+
+    <script>
+    let data = [];
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Fetch and parse CSV data
+        fetch('http://localhost:8000/Processed_Data2.csv')
+            .then(response => response.text())
+            .then(csv => {
+                Papa.parse(csv, {
+                    header: true,
+                    skipEmptyLines: true,
+                    complete: function(results) {
+                        data = results.data.filter(row => row['Last Rank'] && !isNaN(parseFloat(row['Last Rank'])) && parseFloat(row['Last Rank']) > 0);
+                        console.log('Data loaded:', data);  // Debug: Check if data is loaded
+
+                        // Initialize filters
+                        updateFilters();
+                    }
+                });
+            });
+
+        // Update filters based on data
+        function updateFilters() {
+            if (data.length === 0) return;
+
+            // Extract unique values for the dropdowns
+            const collegeCodes = [...new Set(data.map(row => row['College Code']))];
+            const branches = [...new Set(data.map(row => row['Branch']))];
+            const regions = [...new Set(data.map(row => row['Region']))];
+            const castes = [...new Set(data.map(row => row['Caste']))];
+            const genders = [...new Set(data.map(row => row['Gender']))];
+
+            // Populate college code dropdown
+            const collegeCodeSelect = document.getElementById('collegeCode');
+            collegeCodeSelect.innerHTML = '<option value="">All</option>';  // Reset dropdown
+            collegeCodes.forEach(code => {
+                const option = document.createElement('option');
+                option.value = code;
+                option.textContent = code;
+                collegeCodeSelect.appendChild(option);
+            });
+
+            // Populate branch dropdown
+            const branchSelect = document.getElementById('branch');
+            branchSelect.innerHTML = '<option value="">All</option>';  // Reset dropdown
+            branches.forEach(branch => {
+                const option = document.createElement('option');
+                option.value = branch;
+                option.textContent = branch;
+                branchSelect.appendChild(option);
+            });
+        }
+
+        // Form submission event
+        document.getElementById('searchForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            // Retrieve and parse input values
+            const rank = parseFloat(document.getElementById('rank').value.trim()) || 0;
+            const region = document.getElementById('region').value.trim();
+            const gender = document.getElementById('gender').value.trim();
+            const caste = document.getElementById('caste').value.trim();
+            const branch = document.getElementById('branch').value.trim();
+            const collegeCode = document.getElementById('collegeCode').value.trim();
+
+            // Ensure rank is greater than zero
+            if (rank <= 0) {
+                alert("Rank must be greater than zero.");
+                return;
+            }
+
+            // Filter data based on the selected criteria
+            let filteredData = data.filter(row => {
+                const lastRank = parseFloat(row['Last Rank']);
+                return (!collegeCode || collegeCode === row['College Code']) &&
+                       (!region || region === row['Region']) &&
+                       (!caste || caste === row['Caste']) &&
+                       (!gender || gender === row['Gender']) &&
+                       (!branch || branch === row['Branch']) &&
+                       (lastRank >= rank);
+            });
+
+            // Open new tab and display the results
+            openResultsInNewTab(filteredData);
+        });
+
+        // Function to open results in a new tab
+        function openResultsInNewTab(results) {
+            const newTab = window.open('', '_blank');
+            if (!newTab) {
+                alert("Please allow popups for this site.");
+                return;
+            }
+            newTab.document.write('<html><head><title>Search Results</title>');
+            newTab.document.write('<style>table { width: 100%; border-collapse: collapse; } th, td { padding: 10px; text-align: left; border: 1px solid #ddd; } th { background-color: #f4f4f4; }</style>');
+            newTab.document.write('</head><body>');
+            newTab.document.write('<h1>Search Results</h1>');
+
+            if (results.length === 0) {
+                newTab.document.write('<p>No results found</p>');
+            } else {
+                newTab.document.write('<table><thead><tr>');
+                const headers = Object.keys(results[0]);
+                headers.forEach(header => {
+                    newTab.document.write(`<th>${header}</th>`);
+                });
+                newTab.document.write('</tr></thead><tbody>');
+
+                results.forEach(row => {
+                    newTab.document.write('<tr>');
+                    headers.forEach(header => {
+                        newTab.document.write(`<td>${row[header] || ''}</td>`);
+                    });
+                    newTab.document.write('</tr>');
+                });
+
+                newTab.document.write('</tbody></table>');
+            }
+
+            newTab.document.write('</body></html>');
+            newTab.document.close();
+        }
+    });
+    </script>
+</body>
+</html>
