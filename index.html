@@ -15,94 +15,115 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
         }
         .container {
-            background-color: white;
+            background-color: #ffffff;
             padding: 20px 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            max-width: 800px;
-            width: 100%;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            max-width: 90%;
+            width: 600px;
+            box-sizing: border-box;
         }
         h1 {
             color: #333;
             text-align: center;
-        }
-        form {
+            font-size: 1.5rem;
             margin-bottom: 20px;
         }
+        form {
+            display: flex;
+            flex-direction: column;
+        }
         label {
-            display: block;
             font-weight: 500;
-            margin: 10px 0 5px;
+            margin-bottom: 5px;
+            font-size: 1rem;
         }
         input, select {
-            width: calc(100% - 20px);
-            margin-bottom: 10px;
-            padding: 10px;
+            width: 100%;
+            margin-bottom: 15px;
+            padding: 12px;
             border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 16px;
+            border-radius: 8px;
+            font-size: 1rem;
+            box-sizing: border-box;
         }
         button {
-            padding: 10px;
+            padding: 12px;
             background-color: #4CAF50;
-            color: white;
+            color: #ffffff;
             border: none;
-            border-radius: 5px;
+            border-radius: 8px;
             cursor: pointer;
-            font-size: 16px;
-            width: 100%;
+            font-size: 1rem;
+            transition: background-color 0.3s ease;
         }
         button:hover {
             background-color: #45a049;
+        }
+        @media (max-width: 600px) {
+            .container {
+                padding: 15px;
+                width: 100%;
+            }
+            h1 {
+                font-size: 1.2rem;
+            }
+        }
+        @media (max-width: 400px) {
+            input, select, button {
+                font-size: 0.9rem;
+                padding: 10px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>AP EAPCET 2024: Last Rank Cutoffs for Colleges</h1>
+        <h1>AP EAPCET 2024 First Phase: Last Rank Cutoffs and Opening Ranks for Colleges by Region, Caste, Gender, and Branch</h1>
         <form id="searchForm">
-            <label for="rank">Rank:</label>
-            <input type="number" id="rank" name="rank" min="1" placeholder="Enter minimum rank">
+            <label for="rank">Rank (ర్యాంక్):</label>
+    <input type="number" id="rank" name="rank" min="1" placeholder="Enter rank (ర్యాంక్ ను నమోదు చేయండి)">
 
-            <label for="region">Region:</label>
-            <select id="region" name="region">
-                <option value="">All</option>
-                <option value="AU">AU</option>
-                <option value="SVU">SVU</option>
-            </select>
+    <label for="region">Region (ప్రాంతం):</label>
+    <select id="region" name="region">
+        <option value="">All (అన్ని)</option>
+        <option value="AU">AU (ఆంధ్రా విశ్వవిద్యాలయం)</option>
+        <option value="SVU">SVU (శ్రీ వెంకటేశ్వర విశ్వవిద్యాలయం)</option>
+    </select>
 
-            <label for="gender">Gender:</label>
-            <select id="gender" name="gender">
-                <option value="">All</option>
-                <option value="M">Male</option>
-                <option value="F">Female</option>
-            </select>
+    <label for="category">Category(వర్గం) :</label>
+    <select id="category" name="category">
+        <option value="">All (అన్ని)</option>
+        <option value="GEN">Gen</option>
+        <option value="GIRLS">Girls</option>
+    </select>
 
-            <label for="caste">Caste:</label>
-            <select id="caste" name="caste">
-                <option value="">All</option>
-                <option value="BC_A">BC_A</option>
-                <option value="BC_B">BC_B</option>
-                <option value="BC_C">BC_C</option>
-                <option value="BC_D">BC_D</option>
-                <option value="BC_E">BC_E</option>
-                <option value="OC">OC</option>
-                <option value="SC">SC</option>
-                <option value="ST">ST</option>
-                <option value="EWS">EWS</option>
-            </select>
+    <label for="caste">Caste (కులం):</label>
+    <select id="caste" name="caste">
+        <option value="">All (అన్ని)</option>
+        <option value="BC_A">BC_A (బీసీ_A)</option>
+        <option value="BC_B">BC_B (బీసీ_B)</option>
+        <option value="BC_C">BC_C (బీసీ_C)</option>
+        <option value="BC_D">BC_D (బీసీ_D)</option>
+        <option value="BC_E">BC_E (బీసీ_E)</option>
+        <option value="OC">OC (ఓసి)</option>
+        <option value="SC">SC (ఎస్సీ)</option>
+        <option value="ST">ST (ఎస్టీ)</option>
+        <option value="EWS">EWS (ఈడబ్ల్యూఎస్)</option>
+    </select>
 
-            <label for="branch">Branch:</label>
-            <select id="branch" name="branch">
-                <option value="">All</option>
-            </select>
+            <label for="branch">Branch (బ్రాంచ్ కోడ్ మరియు పేరు):</label>
+    <select id="branch" name="branch">
+        <option value="">All (అన్ని)</option>
+        <!-- Additional branch options can be added here -->
+    </select>
 
-            <label for="collegeCode">College Code:</label>
-            <select id="collegeCode" name="collegeCode">
-                <option value="">All</option>
+    <label for="collegeCode">College Code and Name (కళాశాల కోడ్ మరియు పేరు):</label>
+    <select id="collegeCode" name="collegeCode">
+        <option value="">All (అన్ని)</option>
             </select>
 
             <button type="submit">Search</button>
@@ -113,16 +134,24 @@
     let data = [];
 
     document.addEventListener('DOMContentLoaded', function() {
+        console.log('Document loaded');
+
         // Fetch and parse CSV data
-        fetch('Processed_Data2.csv')
+        fetch('Processed_Data13.csv')
             .then(response => response.text())
             .then(csv => {
+                console.log('CSV data fetched');
                 Papa.parse(csv, {
                     header: true,
                     skipEmptyLines: true,
                     complete: function(results) {
-                        data = results.data.filter(row => row['Last Rank'] && !isNaN(parseFloat(row['Last Rank'])) && parseFloat(row['Last Rank']) > 0);
-                        console.log('Data loaded:', data);  // Debug: Check if data is loaded
+                        console.log('CSV data parsed');
+                        //data = results.data.filter(row => row['Last Rank'] && !isNaN(parseFloat(row['Last Rank'])) && parseFloat(row['Last Rank']) > 0);
+						data = results.data.filter(row => {
+                            const Last_Rank = parseFloat(row['Last_Rank']);
+                            return !isNaN(Last_Rank) && Last_Rank > 0;
+                        });
+                        console.log('Filtered data', data);
 
                         // Initialize filters
                         updateFilters();
@@ -134,12 +163,14 @@
         function updateFilters() {
             if (data.length === 0) return;
 
+            console.log('Updating filters');
             // Extract unique values for the dropdowns
-            const collegeCodes = [...new Set(data.map(row => row['College Code']))];
-            const branches = [...new Set(data.map(row => row['Branch']))];
+            const collegeCodes = [...new Set(data.map(row => row['College Code__College Name']))];
+			
+            const branches = [...new Set(data.map(row => row['Branch Code__Branch Name']))];
             const regions = [...new Set(data.map(row => row['Region']))];
             const castes = [...new Set(data.map(row => row['Caste']))];
-            const genders = [...new Set(data.map(row => row['Gender']))];
+            const genders = [...new Set(data.map(row => row['Category']))];
 
             // Populate college code dropdown
             const collegeCodeSelect = document.getElementById('collegeCode');
@@ -160,19 +191,23 @@
                 option.textContent = branch;
                 branchSelect.appendChild(option);
             });
+            console.log('Filters updated');
         }
 
         // Form submission event
         document.getElementById('searchForm').addEventListener('submit', function(event) {
             event.preventDefault();
+            console.log('Form submitted');
             
             // Retrieve and parse input values
             const rank = parseFloat(document.getElementById('rank').value.trim()) || 0;
             const region = document.getElementById('region').value.trim();
-            const gender = document.getElementById('gender').value.trim();
+            const category = document.getElementById('category').value.trim();
             const caste = document.getElementById('caste').value.trim();
             const branch = document.getElementById('branch').value.trim();
             const collegeCode = document.getElementById('collegeCode').value.trim();
+
+            console.log('Form values', { rank, region, category, caste, branch, collegeCode });
 
             // Ensure rank is greater than zero
             if (rank <= 0) {
@@ -182,14 +217,16 @@
 
             // Filter data based on the selected criteria
             let filteredData = data.filter(row => {
-                const lastRank = parseFloat(row['Last Rank']);
-                return (!collegeCode || collegeCode === row['College Code']) &&
+                const lastRank = parseFloat(row['Last_Rank']);
+                return (!collegeCode || collegeCode === row['College Code__College Name']) &&
                        (!region || region === row['Region']) &&
                        (!caste || caste === row['Caste']) &&
-                       (!gender || gender === row['Gender']) &&
-                       (!branch || branch === row['Branch']) &&
+                       (!category || category === row['Category']) &&
+                       (!branch || branch === row['Branch Code__Branch Name']) &&
                        (lastRank >= rank);
             });
+
+            console.log('Filtered data for results', filteredData);
 
             // Open new tab and display the results
             openResultsInNewTab(filteredData);
@@ -197,19 +234,21 @@
 
         // Function to open results in a new tab
         function openResultsInNewTab(results) {
+            console.log('Opening results in a new tab');
             const newTab = window.open('', '_blank');
             if (!newTab) {
                 alert("Please allow popups for this site.");
                 return;
             }
             newTab.document.write('<html><head><title>Search Results</title>');
-            newTab.document.write('<style>table { width: 100%; border-collapse: collapse; } th, td { padding: 10px; text-align: left; border: 1px solid #ddd; } th { background-color: #f4f4f4; }</style>');
+            newTab.document.write('<style>table { width: 100%; border-collapse: collapse; } th, td { padding: 12px; text-align: left; border: 1px solid #ddd; } th { background-color: #f4f4f4; font-weight: 500; }</style>');
             newTab.document.write('</head><body>');
-            newTab.document.write('<h1>Search Results</h1>');
+            
 
             if (results.length === 0) {
-                newTab.document.write('<p>No results found</p>');
+                newTab.document.write('<p style="color: red;">No Data Available for the Selected Criteria</p>');
             } else {
+				newTab.document.write('<h1>Search Results</h1>');
                 newTab.document.write('<table><thead><tr>');
                 const headers = Object.keys(results[0]);
                 headers.forEach(header => {
@@ -230,6 +269,7 @@
 
             newTab.document.write('</body></html>');
             newTab.document.close();
+            console.log('Results displayed in new tab');
         }
     });
     </script>
