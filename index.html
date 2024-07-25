@@ -129,6 +129,9 @@
 			.select2-container--default .select2-selection--multiple .select2-selection__choice {
 				margin-top: 5px;
 			}
+			.select2-container--default .select2-dropdown {
+    z-index: 1000; /* Ensure dropdown is above other elements */
+}
 			.select2-selection__clear {
 				display: none !important;
 			}
@@ -223,194 +226,171 @@
 		</div>
 
 		<script>
-			let data = [];
+			$(document).ready(function() {
+    let data = [];
 
-			document.addEventListener('DOMContentLoaded', function() {
-				console.log('Document loaded');
+    function initializeSelect2() {
+        $('#branch, #collegeCode').select2({
+            placeholder: "Select options",
+            allowClear: true,
+            width: '100%',
+            closeOnSelect: false
+        }).on('select2:select', function(e) {
+            let selectedValues = $(this).val() || [];
+            if (e.params.data.id === '') {
+                // If "All" is selected, clear all other selections
+                selectedValues = [''];
+            } else {
+                // Remove "All" if other options are selected
+                selectedValues = selectedValues.filter(value => value !== '');
+            }
+            $(this).val(selectedValues).trigger('change');
+            clearSearchTerm($(this));
+        }).on('select2:unselect', function(e) {
+            let selectedValues = $(this).val() || [];
+            if (selectedValues.length === 0) {
+                // If no options are selected, select "All"
+                $(this).val(['']);
+            } else {
+                // Ensure "All" is not included if other options are selected
+                selectedValues = selectedValues.filter(value => value !== '');
+                $(this).val(selectedValues).trigger('change');
+            }
+            clearSearchTerm($(this));
+        });
 
-				// Initialize Select2 before fetching data
-				initializeSelect2();
+        // Attach event listeners to handle mouse movement outside
+        handleDropdownMouseMovement();
+    }
 
-				// Fetch and parse CSV data
-				fetch('Processed_Data14.csv')
-					.then(response => response.text())
-					.then(csv => {
-						console.log('CSV data fetched');
-						Papa.parse(csv, {
-							header: true,
-							skipEmptyLines: true,
-							complete: function(results) {
-								console.log('CSV data parsed');
-								data = results.data.filter(row => {
-									const Last_Rank = parseFloat(row['Last_Rank']);
-									return !isNaN(Last_Rank) && Last_Rank > 0;
-								});
-								console.log('Filtered data', data);
+    function clearSearchTerm($select) {
+        // Clear search term from the select2 search box
+        let $searchField = $select.siblings('.select2-container').find('.select2-search__field');
+        if ($searchField.length) {
+            $searchField.val('').trigger('input');
+        }
+    }
 
-								// Update filters after data is loaded
-								updateFilters();
-							}
-						});
-					});
+    function handleDropdownMouseMovement() {
+        $(document).on('mousemove', function(e) {
+            if ($('.select2-container--open').length > 0) {
+                const $dropdown = $('.select2-container--open');
+                const offset = $dropdown.offset();
+                const width = $dropdown.outerWidth();
+                const height = $dropdown.outerHeight();
+                const mouseX = e.pageX;
+                const mouseY = e.pageY;
 
-				// Form submission event
-				document.getElementById('searchForm').addEventListener('submit', function(event) {
-					event.preventDefault();
-					console.log('Form submitted');
+                if (mouseX < offset.left || mouseX > offset.left + width || mouseY < offset.top || mouseY > offset.top + height) {
+                    setTimeout(function() {
+                        $dropdown.select2('close');
+                    }, 100);
+                }
+            }
+        });
+    }
 
-					// Retrieve and parse input values
-					const rankInput = document.getElementById('rank').value.trim();
-					const rank = rankInput === '' ? 0 : parseFloat(rankInput);
-					const region = document.getElementById('region').value.trim();
-					const category = document.getElementById('category').value.trim();
-					const caste = document.getElementById('caste').value.trim();
-					const branches = $('#branch').val();
-					const collegeCodes = $('#collegeCode').val();
+    function populateSelect(selectId, options) {
+        const select = $(selectId);
+        select.empty().append('<option value="">All</option>');
+        options.forEach(option => {
+            select.append(new Option(option, option));
+        });
+    }
 
-					console.log('Form values', { rank, region, category, caste, branches, collegeCodes });
+    function updateFilters() {
+        if (data.length === 0) return;
 
-					// Filter data based on the selected criteria
-					let filteredData = data.filter(row => {
-						const lastRank = parseFloat(row['Last_Rank']);
-						return (!collegeCodes.length || collegeCodes.includes(row['College Code__College Name'])) &&
-							   (!region || region === row['Region']) &&
-							   (!caste || caste === row['Caste']) &&
-							   (!category || category === row['Category']) &&
-							   (!branches.length || branches.includes(row['Branch Code__Branch Name'])) &&
-							   (lastRank >= rank);
-					});
+        const collegeCodes = [...new Set(data.map(row => row['College Code__College Name']))];
+        const branches = [...new Set(data.map(row => row['Branch Code__Branch Name']))];
 
-					console.log('Filtered data for results', filteredData);
+        populateSelect('#collegeCode', collegeCodes);
+        populateSelect('#branch', branches);
 
-					// Open new tab and display the results
-					openResultsInNewTab(filteredData);
-				});
-			});
+        initializeSelect2();
+    }
 
-			 function initializeSelect2() {
-				$('#branch, #collegeCode').select2({
-					placeholder: "Select options",
-					allowClear: true,
-					width: '100%',
-					closeOnSelect: false
-				}).on('select2:select', function(e) {
-					let selectedValues = $(this).val() || [];
-					if (e.params.data.id !== '') {
-						// Remove 'All' option if a specific option is selected
-						selectedValues = selectedValues.filter(value => value !== '');
-					} else {
-						// If 'All' is selected, clear other selections
-						selectedValues = [''];
-					}
-					$(this).val(selectedValues).trigger('change');
-				}).on('select2:unselect', function(e) {
-					let selectedValues = $(this).val() || [];
-					if (selectedValues.length === 0) {
-						// If no options are selected, select 'All'
-						$(this).val(['']);
-					} else if (!selectedValues.includes('')) {
-						// Ensure 'All' is not in the selection if other options are selected
-						selectedValues = selectedValues.filter(value => value !== '');
-						$(this).val(selectedValues).trigger('change');
-					}
-				});
-				
-			// Add custom clear button
-				$('#branch, #collegeCode').each(function() {
-					const $select = $(this);
-					const $container = $select.next('.select2-container');
-					const $clearButton = $('<span class="select2-selection__clear">&times;</span>');
-					
-					$clearButton.on('click', function(e) {
-						e.stopPropagation();
-						$select.val(['']);
-						$select.trigger('change');
-					});
+    function openResultsInNewTab(results) {
+        const newTab = window.open('', '_blank');
+        if (!newTab) {
+            alert("Please allow popups for this site.");
+            return;
+        }
+        newTab.document.write('<html><head><title>Search Results</title>');
+        newTab.document.write('<style>table { width: 100%; border-collapse: collapse; } th, td { padding: 12px; text-align: left; border: 1px solid #ddd; } th { background-color: #f4f4f4; font-weight: 500; }</style>');
+        newTab.document.write('</head><body>');
 
-					$container.find('.select2-selection').append($clearButton);
+        if (results.length === 0) {
+            newTab.document.write('<p style="color: red;">No Data Available for the Selected Criteria</p>');
+        } else {
+            newTab.document.write('<h1>Search Results</h1>');
+            newTab.document.write('<table><thead><tr>');
+            const headers = Object.keys(results[0]);
+            headers.forEach(header => {
+                newTab.document.write(`<th>${header}</th>`);
+            });
+            newTab.document.write('</tr></thead><tbody>');
 
-					// Show/hide clear button based on selection
-					$select.on('change', function() {
-						const hasSelection = $select.val() && $select.val().length > 0 && $select.val()[0] !== '';
-						$clearButton.toggle(hasSelection);
-					});
-				});
-			}
+            results.forEach(row => {
+                newTab.document.write('<tr>');
+                headers.forEach(header => {
+                    newTab.document.write(`<td>${row[header] || ''}</td>`);
+                });
+                newTab.document.write('</tr>');
+            });
 
-			//function updateClearButton($select) {
-			  //  const $clearButton = $select.next().find('.select2-selection__clear');
-				//if ($select.val() && $select.val().length > 0 && $select.val()[0] !== '') {
-				  //  $clearButton.show();
-			   // } else {
-				 //   $clearButton.hide();
-				//}
-			//}
+            newTab.document.write('</tbody></table>');
+        }
 
-			function updateFilters() {
-				if (data.length === 0) return;
+        newTab.document.write('</body></html>');
+        newTab.document.close();
+    }
 
-				console.log('Updating filters');
-				// Extract unique values for the dropdowns
-				const collegeCodes = [...new Set(data.map(row => row['College Code__College Name']))];
-				const branches = [...new Set(data.map(row => row['Branch Code__Branch Name']))];
+    // Fetch and parse CSV data
+    fetch('http://localhost:8000/Processed_Data14.csv')
+        .then(response => response.text())
+        .then(csv => {
+            Papa.parse(csv, {
+                header: true,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    data = results.data.filter(row => {
+                        const Last_Rank = parseFloat(row['Last_Rank']);
+                        return !isNaN(Last_Rank) && Last_Rank > 0;
+                    });
+                    updateFilters();
+                }
+            });
+        });
 
-				// Populate college code dropdown
-				populateSelect('#collegeCode', collegeCodes);
+    // Form submission event
+    $('#searchForm').on('submit', function(event) {
+        event.preventDefault();
 
-				// Populate branch dropdown
-				populateSelect('#branch', branches);
+        const rankInput = $('#rank').val().trim();
+        const rank = rankInput === '' ? 0 : parseFloat(rankInput);
+        const region = $('#region').val().trim();
+        const category = $('#category').val().trim();
+        const caste = $('#caste').val().trim();
+        const branches = $('#branch').val();
+        const collegeCodes = $('#collegeCode').val();
 
-				// Reinitialize Select2 after adding options
-				initializeSelect2();
+        let filteredData = data.filter(row => {
+            const lastRank = parseFloat(row['Last_Rank']);
+            return (!collegeCodes.length || collegeCodes.includes(row['College Code__College Name'])) &&
+                   (!region || region === row['Region']) &&
+                   (!caste || caste === row['Caste']) &&
+                   (!category || category === row['Category']) &&
+                   (!branches.length || branches.includes(row['Branch Code__Branch Name'])) &&
+                   (lastRank >= rank);
+        });
 
-				console.log('Filters updated');
-			}
+        openResultsInNewTab(filteredData);
+    });
+});
 
-			function populateSelect(selectId, options) {
-				const select = $(selectId);
-				select.empty().append('<option value="">All</option>');
-				options.forEach(option => {
-					select.append(new Option(option, option));
-				});
-			}
 
-			function openResultsInNewTab(results) {
-				console.log('Opening results in a new tab');
-				const newTab = window.open('', '_blank');
-				if (!newTab) {
-					alert("Please allow popups for this site.");
-					return;
-				}
-				newTab.document.write('<html><head><title>Search Results</title>');
-				newTab.document.write('<style>table { width: 100%; border-collapse: collapse; } th, td { padding: 12px; text-align: left; border: 1px solid #ddd; } th { background-color: #f4f4f4; font-weight: 500; }</style>');
-				newTab.document.write('</head><body>');
 
-				if (results.length === 0) {
-					newTab.document.write('<p style="color: red;">No Data Available for the Selected Criteria</p>');
-				} else {
-					newTab.document.write('<h1>Search Results</h1>');
-					newTab.document.write('<table><thead><tr>');
-					const headers = Object.keys(results[0]);
-					headers.forEach(header => {
-						newTab.document.write(`<th>${header}</th>`);
-					});
-					newTab.document.write('</tr></thead><tbody>');
-
-					results.forEach(row => {
-						newTab.document.write('<tr>');
-						headers.forEach(header => {
-							newTab.document.write(`<td>${row[header] || ''}</td>`);
-						});
-						newTab.document.write('</tr>');
-					});
-
-					newTab.document.write('</tbody></table>');
-				}
-
-				newTab.document.write('</body></html>');
-				newTab.document.close();
-				console.log('Results displayed in new tab');
-			}
 		</script>
 	</body>
 	</html>
