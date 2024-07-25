@@ -347,7 +347,7 @@
     }
 
     // Fetch and parse CSV data
-    fetch('http://localhost:8000/Processed_Data14.csv')
+    fetch('Processed_Data14.csv')
         .then(response => response.text())
         .then(csv => {
             Papa.parse(csv, {
